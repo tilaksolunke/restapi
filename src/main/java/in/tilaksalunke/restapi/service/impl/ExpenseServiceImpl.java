@@ -88,8 +88,8 @@ public class ExpenseServiceImpl implements ExpenseService {
 
     @Override
     public ExpenseDTO updateExpenseDetails(ExpenseDTO expenseDTO, String expenseId) {
-        ExpenseEntity existingExpense = getExpenseEntity((expenseId));
-        ExpenseEntity updatedExpenseEntity = mapToExpenseEntity((expenseDTO));
+        ExpenseEntity existingExpense = getExpenseEntity(expenseId);
+        ExpenseEntity updatedExpenseEntity = mapToExpenseEntity(expenseDTO);
         updatedExpenseEntity.setId(existingExpense.getId());
         updatedExpenseEntity.setExpenseId(existingExpense.getExpenseId());
         updatedExpenseEntity.setCreatedAt(existingExpense.getCreatedAt());
