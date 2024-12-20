@@ -2,6 +2,7 @@ package in.tilaksalunke.restapi.service.impl;
 
 import in.tilaksalunke.restapi.dto.ProfileDTO;
 import in.tilaksalunke.restapi.entity.ProfileEntity;
+import in.tilaksalunke.restapi.exceptions.ItemExistsException;
 import in.tilaksalunke.restapi.repository.ProfileRepository;
 import in.tilaksalunke.restapi.service.ProfileService;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,9 @@ public class ProfileServiceImpl implements ProfileService {
      * */
     @Override
     public ProfileDTO createProfile(ProfileDTO profileDTO) {
+        if(profileRepository.existsByEmail(profileDTO.getEmail())){
+            throw new ItemExistsException("Profile already exists " + profileDTO.getEmail());
+        }
         profileDTO.setPassword(encoder.encode(profileDTO.getPassword()));
         ProfileEntity profileEntity = mapToProfileEntity(profileDTO);
         profileEntity.setProfileId(UUID.randomUUID().toString());
