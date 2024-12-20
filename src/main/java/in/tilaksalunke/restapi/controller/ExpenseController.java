@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @RestController
 @Slf4j
 @RequiredArgsConstructor
-@CrossOrigin("*")
+
 public class ExpenseController {
     private final ExpenseService expenseService;
     private final ModelMapper modelMapper;
