@@ -7,9 +7,11 @@ import in.tilaksalunke.restapi.service.ProfileService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.UUID;
+
 
 @Service
 @Slf4j
@@ -19,6 +21,8 @@ public class ProfileServiceImpl implements ProfileService {
     private final ProfileRepository profileRepository;
     private final ModelMapper modelMapper;
 
+    private final PasswordEncoder encoder;
+
     /**
      * It will save the user details to database
      * @param profileDTO
@@ -26,6 +30,7 @@ public class ProfileServiceImpl implements ProfileService {
      * */
     @Override
     public ProfileDTO createProfile(ProfileDTO profileDTO) {
+        profileDTO.setPassword(encoder.encode(profileDTO.getPassword()));
         ProfileEntity profileEntity = mapToProfileEntity(profileDTO);
         profileEntity.setProfileId(UUID.randomUUID().toString());
         profileEntity = profileRepository.save(profileEntity);
