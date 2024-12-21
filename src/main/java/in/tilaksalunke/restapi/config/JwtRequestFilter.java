@@ -1,6 +1,7 @@
 package in.tilaksalunke.restapi.config;
 
 import in.tilaksalunke.restapi.service.CustomerUserDetailsService;
+import in.tilaksalunke.restapi.service.TokenBlacklistService;
 import in.tilaksalunke.restapi.util.JwtTokenUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -21,7 +22,9 @@ public class JwtRequestFilter extends OncePerRequestFilter {
     @Autowired
     private JwtTokenUtil jwtTokenUtil;
     @Autowired
-    private CustomerUserDetailsService userDetailsService;
+    private  CustomerUserDetailsService userDetailsService;
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         final String requestTokenHeader = request.getHeader("Authorization");
@@ -29,8 +32,13 @@ public class JwtRequestFilter extends OncePerRequestFilter {
         String jwtToken = null;
         String email = null;
 
-        if(requestTokenHeader != null && requestTokenHeader.startsWith("Bearer")){
+        if(requestTokenHeader != null && requestTokenHeader.startsWith("Bearer ")){
             jwtToken = requestTokenHeader.substring(7);
+
+            if(jwtToken != null && tokenBlacklistService.isTokenBlacklisted(jwtToken)){
+                response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                return;
+            }
 
             try{
                 email = jwtTokenUtil.getUsernameFromToken(jwtToken);
