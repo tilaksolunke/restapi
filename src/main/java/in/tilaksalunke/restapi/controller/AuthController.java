@@ -7,12 +7,15 @@ import in.tilaksalunke.restapi.io.ProfileRequest;
 import in.tilaksalunke.restapi.io.ProfileResponse;
 import in.tilaksalunke.restapi.service.CustomerUserDetailsService;
 import in.tilaksalunke.restapi.service.ProfileService;
+import in.tilaksalunke.restapi.service.TokenBlacklistService;
 import in.tilaksalunke.restapi.util.JwtTokenUtil;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.DisabledException;
@@ -33,6 +36,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
     private final CustomerUserDetailsService userDetailsService;
     private final JwtTokenUtil jwtTokenUtil;
+    private final TokenBlacklistService tokenBlacklistService;
 
     /**
      * API endpoint to register new user
@@ -56,6 +60,23 @@ public class AuthController {
         final UserDetails userDetails = userDetailsService.loadUserByUsername((authRequest.getEmail()));
         final String token = jwtTokenUtil.generateToken(userDetails);
         return new AuthResponse(token, authRequest.getEmail());
+    }
+
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    @PostMapping("/signout")
+    public void signout(HttpServletRequest request){
+        String jwtToken = extractJwtTokenFromRequest(request);
+        if(jwtToken != null){
+            tokenBlacklistService.addTokenToBlacklist(jwtToken);
+        }
+    }
+
+    private String extractJwtTokenFromRequest(HttpServletRequest request) {
+        String bearerToken = request.getHeader("Authorization");
+        if(bearerToken != null && bearerToken.startsWith("Bearer ")){
+            return bearerToken.substring(7);
+        }
+        return null;
     }
 
     private void authenticate(AuthRequest authRequest) throws Exception {
